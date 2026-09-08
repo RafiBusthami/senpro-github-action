@@ -35,18 +35,23 @@ jobs:
       - name: Build app on VM
         uses: appleboy/ssh-action@master
         with:
-          host: 48.193.47.181
-          username: senpro-modul2
-          password: Senpro-Modul2
-          port: 22
+          host: ${{ secrets.48.193.47.181 }}
+          username: ${{ secrets.senpro-modul2 }}
+          password: ${{ secrets.Senpro-Modul2 }}
+          port: ${{ secrets.22 }}
 
           script: |
+            ssh-add ~/.ssh/<KEY_NAME_FROM_TA>
+
             echo "Check project folder"
 
-            if [ ! -d "${HOME}/senpro-github-action/" ]; then
+            if [ -d "${HOME}/senpro-github-action/" ]; then
               echo "Repository has not been cloned. Cloning..."
 
-              git clone https://github.com/RafiBusthami/senpro-github-action.git ~/senpro-github-action
+              mkdir -p ~/senpro-github-action
+              cd ~/senpro-github-action
+
+              git clone <PROJECT_REPOSITORY_LINK>
 
               cd ~/senpro-github-action
 
