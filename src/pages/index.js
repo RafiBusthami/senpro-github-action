@@ -1,7 +1,7 @@
-// import Head from 'next/head'
-// import Image from 'next/image'
-// import { Inter } from '@next/font/google'
-// import styles from '@/styles/Home.module.css'
+ import Head from 'next/head'//ini
+ import Image from 'next/image'//adalah
+ import { Inter } from '@next/font/google'//komentar
+ import styles from '@/styles/Home.module.css'//ini 
 
 const inter = Inter({ subsets: ['latin'] })
 
