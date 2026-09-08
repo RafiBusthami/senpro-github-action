@@ -22,3 +22,46 @@ jobs:
 
       - run: npm i
       - run: npm run build
+
+  deploy:
+    needs: test-build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Build app on VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: 48.193.47.181
+          username: senpro-modul2
+          password: Senpro-Modul2
+          port: 22
+
+          script: |
+            echo "Check project folder"
+
+            if [ ! -d "${HOME}/senpro-github-action/" ]; then
+              echo "Repository has not been cloned. Cloning..."
+
+              git clone https://github.com/RafiBusthami/senpro-github-action.git ~/senpro-github-action
+
+              cd ~/senpro-github-action
+
+              echo "Install Package and Build Project"
+              npm install
+              npm run build
+
+            else
+              echo "Repository already exists. Building..."
+
+              cd ~/senpro-github-action
+
+              git pull origin main
+
+              echo "Install Packages and Build Project"
+              npm install
+              npm run build
+            fi
