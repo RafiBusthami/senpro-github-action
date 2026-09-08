@@ -13,60 +13,45 @@ jobs:
         node-version: [16.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Testing Build pre-Deploy
-        uses: actions/setup-node@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
-      - run: npm i
-      - run: npm run build
+      - name: Install dependencies and build test
+        run: |
+          npm ci
+          npm run build
 
   deploy:
     needs: test-build
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [16.x]
-
     steps:
-      - name: Build app on VM
-        uses: appleboy/ssh-action@master
+      - name: Deploy app to Remote Server over SSH
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.48.193.47.181 }}
-          username: ${{ secrets.senpro-modul2 }}
-          password: ${{ secrets.Senpro-Modul2 }}
-          port: ${{ secrets.22 }}
-
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
           script: |
-            ssh-add ~/.ssh/<KEY_NAME_FROM_TA>
+            TARGET_DIR="${HOME}/senpro-github-action"
 
-            echo "Check project folder"
-
-            if [ -d "${HOME}/senpro-github-action/" ]; then
-              echo "Repository has not been cloned. Cloning..."
-
-              mkdir -p ~/senpro-github-action
-              cd ~/senpro-github-action
-
-              git clone <PROJECT_REPOSITORY_LINK>
-
-              cd ~/senpro-github-action
-
-              echo "Install Package and Build Project"
-              npm install
-              npm run build
-
+            # Check if directory does NOT exist (! -d)
+            if [ ! -d "$TARGET_DIR" ]; then
+              echo "Repository not found. Cloning..."
+              git clone <PROJECT_REPOSITORY_LINK> "$TARGET_DIR"
+              cd "$TARGET_DIR"
             else
-              echo "Repository already exists. Building..."
-
-              cd ~/senpro-github-action
-
-              git pull origin main
-
-              echo "Install Packages and Build Project"
-              npm install
-              npm run build
+              echo "Repository exists. Updating..."
+              cd "$TARGET_DIR"
+              git fetch origin main
+              git reset --hard origin/main
             fi
+
+            echo "Installing dependencies and building..."
+            npm ci
+            npm run build
